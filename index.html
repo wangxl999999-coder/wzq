@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋 - 经典休闲小游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .player-info {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .player-info.active {
+            border: 3px solid #ffd700;
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .player-stone {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .player-stone.black {
+            background: radial-gradient(circle at 30% 30%, #666, #000);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .player-stone.white {
+            background: radial-gradient(circle at 30% 30%, #fff, #ccc);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .player-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .wins-count {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+
+        .sound-controls {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sound-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+
+        .sound-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .game-board-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .board-wrapper {
+            position: relative;
+            padding: 30px;
+            background: linear-gradient(135deg, #deb887 0%, #d2a679 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .board {
+            position: relative;
+            background: #eecfa1;
+            border: 3px solid #8b4513;
+            border-radius: 5px;
+        }
+
+        .board-canvas {
+            display: block;
+        }
+
+        .board-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .modal-content h3 {
+            color: #764ba2;
+            margin: 15px 0 10px;
+            font-size: 1.2rem;
+        }
+
+        .modal-content p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .modal-content ul {
+            color: #555;
+            line-height: 2;
+            padding-left: 20px;
+        }
+
+        .modal-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .winner-text {
+            text-align: center;
+            font-size: 2rem;
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        .winner-stone {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin: 0 10px;
+        }
+
+        .highlight-row {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #f5576c;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .player-info {
+                padding: 10px 20px;
+            }
+            
+            .board-wrapper {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 五子棋</h1>
+        </div>
+
+        <div class="game-info">
+            <div class="player-info active" id="black-info">
+                <div class="player-stone black"></div>
+                <div>
+                    <div class="player-name">黑棋</div>
+                    <div>胜局: <span class="wins-count" id="black-wins">0</span></div>
+                </div>
+            </div>
+            <div class="player-info" id="white-info">
+                <div class="player-stone white"></div>
+                <div>
+                    <div class="player-name">白棋</div>
+                    <div>胜局: <span class="wins-count" id="white-wins">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="restart-btn">🔄 重新开始</button>
+            <button class="btn btn-info" id="rules-btn">📖 游戏规则</button>
+            <div class="sound-controls">
+                <button class="sound-btn" id="bgm-toggle" title="背景音乐">🔊</button>
+                <button class="sound-btn" id="sfx-toggle" title="音效">🎵</button>
+            </div>
+        </div>
+
+        <div class="game-board-container">
+            <div class="board-wrapper">
+                <div class="board">
+                    <canvas class="board-canvas" id="board-canvas"></canvas>
+                    <canvas class="board-overlay" id="board-overlay"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="rules-modal">
+        <div class="modal-content">
+            <h2>📖 五子棋游戏规则</h2>
+            
+            <h3>🎯 游戏目标</h3>
+            <p>先在棋盘上形成横向、纵向或斜向连续5个同色棋子的一方获胜。</p>
+            
+            <h3>⚫ 棋盘与棋子</h3>
+            <ul>
+                <li>棋盘为 15×15 格的标准棋盘</li>
+                <li>棋子分为黑白两色，黑棋先行</li>
+                <li>棋子只能落在棋盘的交叉点上</li>
+            </ul>
+            
+            <h3>📝 落子规则</h3>
+            <ul>
+                <li>黑白双方轮流落子</li>
+                <li>每次只能落一子</li>
+                <li>棋子一旦落下，不能移动或移除</li>
+                <li>不能在已有棋子的位置落子</li>
+            </ul>
+            
+            <h3>🏆 获胜条件</h3>
+            <p>当一方的棋子在以下任一方向形成连续5个时，该方获胜：</p>
+            <ul>
+                <li><strong>横向</strong>：水平方向连续5个</li>
+                <li><strong>纵向</strong>：垂直方向连续5个</li>
+                <li><strong>左斜向</strong>：从左上到右下连续5个</li>
+                <li><strong>右斜向</strong>：从右上到左下连续5个</li>
+            </ul>
+            
+            <h3>💡 小提示</h3>
+            <ul>
+                <li>注意防守，同时寻找进攻机会</li>
+                <li>活三、活四是获胜的关键棋形</li>
+                <li>棋盘中央位置价值最高</li>
+            </ul>
+            
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="close-rules-btn">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="winner-modal">
+        <div class="modal-content">
+            <h2>🎉 游戏结束</h2>
+            <div class="winner-text" id="winner-text"></div>
+            <div class="highlight-row" id="highlight-row"></div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="play-again-btn">再来一局</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOARD_SIZE = 15;
+        const CELL_SIZE = 40;
+        const PADDING = 20;
+        const CANVAS_SIZE = (BOARD_SIZE - 1) * CELL_SIZE + PADDING * 2;
+        const STONE_RADIUS = CELL_SIZE / 2 - 3;
+
+        let boardData = [];
+        let currentPlayer = 'black';
+        let gameOver = false;
+        let blackWins = 0;
+        let whiteWins = 0;
+        let lastMove = null;
+        let winningLine = null;
+
+        let bgmEnabled = true;
+        let sfxEnabled = true;
+        let audioContext = null;
+        let bgmOscillator = null;
+        let bgmGain = null;
+
+        const boardCanvas = document.getElementById('board-canvas');
+        const boardOverlay = document.getElementById('board-overlay');
+        const ctx = boardCanvas.getContext('2d');
+        const overlayCtx = boardOverlay.getContext('2d');
+
+        function init() {
+            setupCanvas();
+            initBoardData();
+            drawBoard();
+            bindEvents();
+            loadWins();
+            updateWinsDisplay();
+        }
+
+        function setupCanvas() {
+            boardCanvas.width = CANVAS_SIZE;
+            boardCanvas.height = CANVAS_SIZE;
+            boardOverlay.width = CANVAS_SIZE;
+            boardOverlay.height = CANVAS_SIZE;
+        }
+
+        function initBoardData() {
+            boardData = [];
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                boardData[i] = [];
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    boardData[i][j] = null;
+                }
+            }
+            currentPlayer = 'black';
+            gameOver = false;
+            lastMove = null;
+            winningLine = null;
+            updatePlayerInfo();
+        }
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+            ctx.strokeStyle = '#5c3317';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(PADDING, PADDING + i * CELL_SIZE);
+                ctx.lineTo(PADDING + (BOARD_SIZE - 1) * CELL_SIZE, PADDING + i * CELL_SIZE);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(PADDING + i * CELL_SIZE, PADDING);
+                ctx.lineTo(PADDING + i * CELL_SIZE, PADDING + (BOARD_SIZE - 1) * CELL_SIZE);
+                ctx.stroke();
+            }
+
+            const starPoints = [
+                [3, 3], [3, 7], [3, 11],
+                [7, 3], [7, 7], [7, 11],
+                [11, 3], [11, 7], [11, 11]
+            ];
+
+            ctx.fillStyle = '#5c3317';
+            starPoints.forEach(([row, col]) => {
+                const x = PADDING + col * CELL_SIZE;
+                const y = PADDING + row * CELL_SIZE;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardData[i][j]) {
+                        drawStone(i, j, boardData[i][j]);
+                    }
+                }
+            }
+
+            if (lastMove) {
+                drawLastMoveIndicator(lastMove.row, lastMove.col);
+            }
+
+            if (winningLine) {
+                drawWinningLine(winningLine);
+            }
+        }
+
+        function drawStone(row, col, color, highlight = false) {
+            const x = PADDING + col * CELL_SIZE;
+            const y = PADDING + row * CELL_SIZE;
+
+            ctx.beginPath();
+            ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+
+            if (color === 'black') {
+                const gradient = ctx.createRadialGradient(
+                    x - STONE_RADIUS * 0.3, y - STONE_RADIUS * 0.3, STONE_RADIUS * 0.1,
+                    x, y, STONE_RADIUS
+                );
+                gradient.addColorStop(0, '#666');
+                gradient.addColorStop(1, '#000');
+                ctx.fillStyle = gradient;
+            } else {
+                const gradient = ctx.createRadialGradient(
+                    x - STONE_RADIUS * 0.3, y - STONE_RADIUS * 0.3, STONE_RADIUS * 0.1,
+                    x, y, STONE_RADIUS
+                );
+                gradient.addColorStop(0, '#fff');
+                gradient.addColorStop(1, '#ccc');
+                ctx.fillStyle = gradient;
+            }
+
+            ctx.fill();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 5;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            ctx.beginPath();
+            ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            if (highlight) {
+                ctx.beginPath();
+                ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+
+        function drawLastMoveIndicator(row, col) {
+            const x = PADDING + col * CELL_SIZE;
+            const y = PADDING + row * CELL_SIZE;
+
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff0000';
+            ctx.fill();
+        }
+
+        function drawWinningLine(line) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.8;
+
+            const firstPoint = line[0];
+            const lastPoint = line[line.length - 1];
+
+            const x1 = PADDING + firstPoint.col * CELL_SIZE;
+            const y1 = PADDING + firstPoint.row * CELL_SIZE;
+            const x2 = PADDING + lastPoint.col * CELL_SIZE;
+            const y2 = PADDING + lastPoint.row * CELL_SIZE;
+
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.restore();
+
+            line.forEach(point => {
+                drawStone(point.row, point.col, boardData[point.row][point.col], true);
+            });
+        }
+
+        function bindEvents() {
+            boardOverlay.addEventListener('click', handleBoardClick);
+            boardOverlay.addEventListener('mousemove', handleBoardMouseMove);
+            boardOverlay.addEventListener('mouseleave', handleBoardMouseLeave);
+
+            document.getElementById('restart-btn').addEventListener('click', restartGame);
+            document.getElementById('rules-btn').addEventListener('click', showRules);
+            document.getElementById('close-rules-btn').addEventListener('click', hideRules);
+            document.getElementById('play-again-btn').addEventListener('click', () => {
+                hideWinnerModal();
+                restartGame();
+            });
+
+            document.getElementById('bgm-toggle').addEventListener('click', toggleBgm);
+            document.getElementById('sfx-toggle').addEventListener('click', toggleSfx);
+        }
+
+        function handleBoardClick(e) {
+            if (gameOver) return;
+
+            const rect = boardOverlay.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const col = Math.round((x - PADDING) / CELL_SIZE);
+            const row = Math.round((y - PADDING) / CELL_SIZE);
+
+            if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+                return;
+            }
+
+            if (boardData[row][col] !== null) {
+                return;
+            }
+
+            placeStone(row, col);
+        }
+
+        function handleBoardMouseMove(e) {
+            if (gameOver) return;
+
+            const rect = boardOverlay.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const col = Math.round((x - PADDING) / CELL_SIZE);
+            const row = Math.round((y - PADDING) / CELL_SIZE);
+
+            if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+                overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                return;
+            }
+
+            if (boardData[row][col] !== null) {
+                overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                return;
+            }
+
+            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            drawPreviewStone(row, col);
+        }
+
+        function handleBoardMouseLeave() {
+            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        }
+
+        function drawPreviewStone(row, col) {
+            const x = PADDING + col * CELL_SIZE;
+            const y = PADDING + row * CELL_SIZE;
+
+            overlayCtx.beginPath();
+            overlayCtx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+
+            if (currentPlayer === 'black') {
+                overlayCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            } else {
+                overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            }
+
+            overlayCtx.fill();
+        }
+
+        function placeStone(row, col) {
+            boardData[row][col] = currentPlayer;
+            lastMove = { row, col };
+
+            playMoveSound();
+            drawBoard();
+            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+            if (checkWin(row, col)) {
+                gameOver = true;
+                playWinSound();
+                
+                if (currentPlayer === 'black') {
+                    blackWins++;
+                } else {
+                    whiteWins++;
+                }
+                saveWins();
+                updateWinsDisplay();
+                
+                setTimeout(() => {
+                    showWinnerModal(currentPlayer);
+                }, 500);
+                return;
+            }
+
+            if (checkDraw()) {
+                gameOver = true;
+                playLoseSound();
+                setTimeout(() => {
+                    showDrawModal();
+                }, 500);
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+            updatePlayerInfo();
+        }
+
+        function checkWin(row, col) {
+            const color = boardData[row][col];
+            const directions = [
+                [0, 1],
+                [1, 0],
+                [1, 1],
+                [1, -1]
+            ];
+
+            for (const [dr, dc] of directions) {
+                let count = 1;
+                let line = [{ row, col }];
+
+                for (let i = 1; i <= 4; i++) {
+                    const newRow = row + dr * i;
+                    const newCol = col + dc * i;
+                    if (newRow < 0 || newRow >= BOARD_SIZE || newCol < 0 || newCol >= BOARD_SIZE) break;
+                    if (boardData[newRow][newCol] === color) {
+                        count++;
+                        line.push({ row: newRow, col: newCol });
+                    } else {
+                        break;
+                    }
+                }
+
+                for (let i = 1; i <= 4; i++) {
+                    const newRow = row - dr * i;
+                    const newCol = col - dc * i;
+                    if (newRow < 0 || newRow >= BOARD_SIZE || newCol < 0 || newCol >= BOARD_SIZE) break;
+                    if (boardData[newRow][newCol] === color) {
+                        count++;
+                        line.push({ row: newRow, col: newCol });
+                    } else {
+                        break;
+                    }
+                }
+
+                if (count >= 5) {
+                    winningLine = line.sort((a, b) => {
+                        if (a.row !== b.row) return a.row - b.row;
+                        return a.col - b.col;
+                    });
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function checkDraw() {
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardData[i][j] === null) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function updatePlayerInfo() {
+            const blackInfo = document.getElementById('black-info');
+            const whiteInfo = document.getElementById('white-info');
+
+            blackInfo.classList.remove('active');
+            whiteInfo.classList.remove('active');
+
+            if (currentPlayer === 'black') {
+                blackInfo.classList.add('active');
+            } else {
+                whiteInfo.classList.add('active');
+            }
+        }
+
+        function updateWinsDisplay() {
+            document.getElementById('black-wins').textContent = blackWins;
+            document.getElementById('white-wins').textContent = whiteWins;
+        }
+
+        function saveWins() {
+            try {
+                localStorage.setItem('gomoku_black_wins', blackWins.toString());
+                localStorage.setItem('gomoku_white_wins', whiteWins.toString());
+            } catch (e) {
+                console.log('LocalStorage not available');
+            }
+        }
+
+        function loadWins() {
+            try {
+                const savedBlackWins = localStorage.getItem('gomoku_black_wins');
+                const savedWhiteWins = localStorage.getItem('gomoku_white_wins');
+                
+                if (savedBlackWins !== null) blackWins = parseInt(savedBlackWins);
+                if (savedWhiteWins !== null) whiteWins = parseInt(savedWhiteWins);
+            } catch (e) {
+                console.log('LocalStorage not available');
+            }
+        }
+
+        function restartGame() {
+            initBoardData();
+            drawBoard();
+            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            hideWinnerModal();
+        }
+
+        function showRules() {
+            document.getElementById('rules-modal').classList.add('show');
+        }
+
+        function hideRules() {
+            document.getElementById('rules-modal').classList.remove('show');
+        }
+
+        function showWinnerModal(winner) {
+            const winnerText = document.getElementById('winner-text');
+            const highlightRow = document.getElementById('highlight-row');
+
+            const stoneClass = winner === 'black' ? 'black' : 'white';
+            const winnerName = winner === 'black' ? '黑棋' : '白棋';
+            
+            winnerText.innerHTML = `恭喜 <span class="winner-stone ${stoneClass}"></span> ${winnerName} 获胜！`;
+
+            let directionText = '';
+            if (winningLine && winningLine.length >= 5) {
+                const first = winningLine[0];
+                const last = winningLine[winningLine.length - 1];
+                
+                if (first.row === last.row) {
+                    directionText = '横向五子连珠';
+                } else if (first.col === last.col) {
+                    directionText = '纵向五子连珠';
+                } else if ((last.row - first.row) === (last.col - first.col)) {
+                    directionText = '左斜向五子连珠';
+                } else {
+                    directionText = '右斜向五子连珠';
+                }
+            }
+            
+            highlightRow.textContent = directionText;
+            
+            document.getElementById('winner-modal').classList.add('show');
+        }
+
+        function showDrawModal() {
+            const winnerText = document.getElementById('winner-text');
+            const highlightRow = document.getElementById('highlight-row');
+
+            winnerText.innerHTML = '平局！棋盘已满';
+            highlightRow.textContent = '';
+            
+            document.getElementById('winner-modal').classList.add('show');
+        }
+
+        function hideWinnerModal() {
+            document.getElementById('winner-modal').classList.remove('show');
+        }
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleBgm() {
+            bgmEnabled = !bgmEnabled;
+            const btn = document.getElementById('bgm-toggle');
+            btn.textContent = bgmEnabled ? '🔊' : '🔇';
+            
+            if (bgmEnabled) {
+                startBgm();
+            } else {
+                stopBgm();
+            }
+        }
+
+        function toggleSfx() {
+            sfxEnabled = !sfxEnabled;
+            const btn = document.getElementById('sfx-toggle');
+            btn.textContent = sfxEnabled ? '🎵' : '🔇';
+        }
+
+        function startBgm() {
+            if (!bgmEnabled || !audioContext) return;
+            
+            stopBgm();
+
+            bgmGain = audioContext.createGain();
+            bgmGain.gain.value = 0.1;
+            bgmGain.connect(audioContext.destination);
+
+            playBgmLoop();
+        }
+
+        function playBgmLoop() {
+            if (!bgmEnabled || !audioContext) return;
+
+            const notes = [523.25, 587.33, 659.25, 587.33, 523.25, 659.25, 587.33, 523.25];
+            const noteDuration = 0.4;
+            const startTime = audioContext.currentTime;
+
+            notes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+
+                gain.gain.setValueAtTime(0.05, startTime + i * noteDuration);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i + 1) * noteDuration - 0.05);
+
+                osc.connect(gain);
+                gain.connect(bgmGain);
+
+                osc.start(startTime + i * noteDuration);
+                osc.stop(startTime + (i + 1) * noteDuration);
+            });
+
+            const totalDuration = notes.length * noteDuration * 1000;
+            bgmOscillator = setTimeout(() => {
+                if (bgmEnabled) {
+                    playBgmLoop();
+                }
+            }, totalDuration);
+        }
+
+        function stopBgm() {
+            if (bgmOscillator) {
+                clearTimeout(bgmOscillator);
+                bgmOscillator = null;
+            }
+            if (bgmGain) {
+                bgmGain.gain.value = 0;
+            }
+        }
+
+        function playMoveSound() {
+            if (!sfxEnabled || !audioContext) return;
+
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.15);
+        }
+
+        function playWinSound() {
+            if (!sfxEnabled || !audioContext) return;
+
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            const startTime = audioContext.currentTime;
+
+            notes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+
+                gain.gain.setValueAtTime(0.3, startTime + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i + 1) * 0.15 + 0.1);
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.start(startTime + i * 0.15);
+                osc.stop(startTime + (i + 1) * 0.15 + 0.1);
+            });
+        }
+
+        function playLoseSound() {
+            if (!sfxEnabled || !audioContext) return;
+
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+
+            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.4);
+        }
+
+        document.addEventListener('click', function initAudioOnFirstClick() {
+            initAudio();
+            if (bgmEnabled) {
+                startBgm();
+            }
+            document.removeEventListener('click', initAudioOnFirstClick);
+        }, { once: false });
+
+        init();
+    </script>
+</body>
+</html>
