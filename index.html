@@ -2,66 +2,96 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
     <title>五子棋 - 经典休闲小游戏</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         body {
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
+            position: relative;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100%;
+            padding-bottom: 20px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
         }
 
         .header h1 {
             color: #fff;
-            font-size: 2.5rem;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            white-space: nowrap;
         }
 
         .game-info {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
+            flex-shrink: 0;
+            width: 100%;
+            max-width: 600px;
         }
 
         .player-info {
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px 30px;
-            border-radius: 15px;
+            padding: 10px 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            flex: 1;
+            min-width: 120px;
+            max-width: 180px;
+            justify-content: center;
         }
 
         .player-info.active {
             border: 3px solid #ffd700;
             background: rgba(255, 255, 255, 1);
+            transform: scale(1.02);
         }
 
         .player-stone {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
         .player-stone.black {
@@ -74,39 +104,59 @@
             box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
         }
 
+        .player-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
         .player-name {
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            color: #333;
         }
 
         .wins-count {
             color: #667eea;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
 
         .controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
+            flex-shrink: 0;
+            width: 100%;
+            max-width: 600px;
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 25px;
-            font-size: 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+            flex-shrink: 0;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            }
         }
 
         .btn-primary {
@@ -126,49 +176,71 @@
 
         .sound-controls {
             background: rgba(255, 255, 255, 0.95);
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 15px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            flex-shrink: 0;
         }
 
         .sound-btn {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             cursor: pointer;
-            padding: 5px;
+            padding: 3px;
             transition: transform 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
         }
 
-        .sound-btn:hover {
-            transform: scale(1.2);
+        .sound-btn:active {
+            transform: scale(0.9);
         }
 
         .game-board-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex: 1;
+            width: 100%;
+            min-height: 0;
         }
 
         .board-wrapper {
             position: relative;
-            padding: 30px;
+            padding: max(10px, 3vw);
             background: linear-gradient(135deg, #deb887 0%, #d2a679 100%);
-            border-radius: 20px;
+            border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            max-width: 100%;
+            max-height: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .board {
             position: relative;
             background: #eecfa1;
-            border: 3px solid #8b4513;
-            border-radius: 5px;
+            border: 2px solid #8b4513;
+            border-radius: 4px;
+            width: 100%;
+            height: 100%;
+            max-width: 580px;
+            max-height: 580px;
+            aspect-ratio: 1;
         }
 
         .board-canvas {
             display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
 
         .board-overlay {
@@ -178,6 +250,7 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
+            touch-action: none;
         }
 
         .modal {
@@ -191,6 +264,8 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            overflow-y: auto;
         }
 
         .modal.show {
@@ -199,80 +274,182 @@
 
         .modal-content {
             background: #fff;
-            padding: 30px;
-            border-radius: 20px;
+            padding: 25px;
+            border-radius: 15px;
             max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
+            width: 100%;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal-content h2 {
             text-align: center;
             color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
         }
 
         .modal-content h3 {
             color: #764ba2;
-            margin: 15px 0 10px;
-            font-size: 1.2rem;
+            margin: 12px 0 8px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
         }
 
         .modal-content p {
             color: #555;
-            line-height: 1.8;
-            margin-bottom: 10px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
         }
 
         .modal-content ul {
             color: #555;
-            line-height: 2;
-            padding-left: 20px;
+            line-height: 1.8;
+            padding-left: 18px;
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
         }
 
         .modal-footer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .winner-text {
             text-align: center;
-            font-size: 2rem;
+            font-size: clamp(1.3rem, 5vw, 2rem);
             color: #764ba2;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .winner-stone {
             display: inline-block;
-            width: 40px;
-            height: 40px;
+            width: clamp(30px, 8vw, 40px);
+            height: clamp(30px, 8vw, 40px);
             border-radius: 50%;
             vertical-align: middle;
-            margin: 0 10px;
+            margin: 0 8px;
+        }
+
+        .winner-stone.black {
+            background: radial-gradient(circle at 30% 30%, #666, #000);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .winner-stone.white {
+            background: radial-gradient(circle at 30% 30%, #fff, #ccc);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
         }
 
         .highlight-row {
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
             color: #f5576c;
             font-weight: bold;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+
             .header h1 {
-                font-size: 1.8rem;
+                margin-bottom: 5px;
             }
-            
+
+            .game-info {
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
             .player-info {
-                padding: 10px 20px;
+                padding: 8px 12px;
+                min-width: 110px;
             }
-            
+
+            .player-stone {
+                width: 24px;
+                height: 24px;
+            }
+
+            .player-name {
+                font-size: 0.85rem;
+            }
+
+            .wins-count {
+                font-size: 0.9rem;
+            }
+
+            .controls {
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+
+            .btn {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+                border-radius: 18px;
+            }
+
+            .sound-controls {
+                padding: 6px 12px;
+                gap: 8px;
+            }
+
+            .sound-btn {
+                font-size: 1.1rem;
+            }
+
             .board-wrapper {
-                padding: 15px;
+                padding: 8px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                border-radius: 12px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .board-wrapper {
+                padding: 25px;
+            }
+
+            .player-info {
+                padding: 12px 20px;
+                max-width: 200px;
+            }
+
+            .player-stone {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 600px) {
+            .header h1 {
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+            }
+
+            .game-info {
+                margin-bottom: 8px;
+            }
+
+            .controls {
+                margin-bottom: 8px;
+            }
+
+            .player-info {
+                padding: 6px 10px;
+                min-width: 100px;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -286,14 +463,14 @@
         <div class="game-info">
             <div class="player-info active" id="black-info">
                 <div class="player-stone black"></div>
-                <div>
+                <div class="player-details">
                     <div class="player-name">黑棋</div>
                     <div>胜局: <span class="wins-count" id="black-wins">0</span></div>
                 </div>
             </div>
             <div class="player-info" id="white-info">
                 <div class="player-stone white"></div>
-                <div>
+                <div class="player-details">
                     <div class="player-name">白棋</div>
                     <div>胜局: <span class="wins-count" id="white-wins">0</span></div>
                 </div>
@@ -302,7 +479,7 @@
 
         <div class="controls">
             <button class="btn btn-primary" id="restart-btn">🔄 重新开始</button>
-            <button class="btn btn-info" id="rules-btn">📖 游戏规则</button>
+            <button class="btn btn-info" id="rules-btn">📖 规则</button>
             <div class="sound-controls">
                 <button class="sound-btn" id="bgm-toggle" title="背景音乐">🔊</button>
                 <button class="sound-btn" id="sfx-toggle" title="音效">🎵</button>
@@ -376,10 +553,14 @@
 
     <script>
         const BOARD_SIZE = 15;
-        const CELL_SIZE = 40;
-        const PADDING = 20;
-        const CANVAS_SIZE = (BOARD_SIZE - 1) * CELL_SIZE + PADDING * 2;
-        const STONE_RADIUS = CELL_SIZE / 2 - 3;
+        const DEFAULT_CELL_SIZE = 40;
+        const DEFAULT_PADDING = 20;
+        const MIN_CELL_SIZE = 18;
+
+        let cellSize = DEFAULT_CELL_SIZE;
+        let padding = DEFAULT_PADDING;
+        let canvasSize = 0;
+        let stoneRadius = 0;
 
         let boardData = [];
         let currentPlayer = 'black';
@@ -388,32 +569,86 @@
         let whiteWins = 0;
         let lastMove = null;
         let winningLine = null;
+        let isDragging = false;
 
         let bgmEnabled = true;
         let sfxEnabled = true;
         let audioContext = null;
         let bgmOscillator = null;
         let bgmGain = null;
+        let audioInitialized = false;
 
         const boardCanvas = document.getElementById('board-canvas');
         const boardOverlay = document.getElementById('board-overlay');
+        const boardElement = document.querySelector('.board');
         const ctx = boardCanvas.getContext('2d');
         const overlayCtx = boardOverlay.getContext('2d');
 
         function init() {
+            calculateBoardDimensions();
             setupCanvas();
             initBoardData();
             drawBoard();
             bindEvents();
             loadWins();
             updateWinsDisplay();
+            
+            window.addEventListener('resize', debounce(handleResize, 100));
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function calculateBoardDimensions() {
+            const containerWidth = window.innerWidth - 40;
+            const containerHeight = window.innerHeight - 200;
+            const maxAvailableSize = Math.min(containerWidth, containerHeight, 600);
+            const minAvailableSize = Math.min(containerWidth, containerHeight, 300);
+            
+            const availableSize = Math.max(minAvailableSize, maxAvailableSize * 0.95);
+            
+            const calculatedCellSize = (availableSize - DEFAULT_PADDING * 2) / (BOARD_SIZE - 1);
+            
+            cellSize = Math.max(MIN_CELL_SIZE, Math.min(DEFAULT_CELL_SIZE, calculatedCellSize));
+            
+            padding = DEFAULT_PADDING;
+            if (cellSize < DEFAULT_CELL_SIZE) {
+                padding = Math.max(10, padding * (cellSize / DEFAULT_CELL_SIZE));
+            }
+            
+            canvasSize = (BOARD_SIZE - 1) * cellSize + padding * 2;
+            stoneRadius = cellSize / 2 - Math.max(2, cellSize * 0.08);
         }
 
         function setupCanvas() {
-            boardCanvas.width = CANVAS_SIZE;
-            boardCanvas.height = CANVAS_SIZE;
-            boardOverlay.width = CANVAS_SIZE;
-            boardOverlay.height = CANVAS_SIZE;
+            const dpr = window.devicePixelRatio || 1;
+            
+            boardCanvas.width = canvasSize * dpr;
+            boardCanvas.height = canvasSize * dpr;
+            boardCanvas.style.width = canvasSize + 'px';
+            boardCanvas.style.height = canvasSize + 'px';
+            ctx.scale(dpr, dpr);
+
+            boardOverlay.width = canvasSize * dpr;
+            boardOverlay.height = canvasSize * dpr;
+            boardOverlay.style.width = canvasSize + 'px';
+            boardOverlay.style.height = canvasSize + 'px';
+            overlayCtx.scale(dpr, dpr);
+        }
+
+        function handleResize() {
+            calculateBoardDimensions();
+            setupCanvas();
+            drawBoard();
         }
 
         function initBoardData() {
@@ -428,24 +663,25 @@
             gameOver = false;
             lastMove = null;
             winningLine = null;
+            isDragging = false;
             updatePlayerInfo();
         }
 
         function drawBoard() {
-            ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
 
             ctx.strokeStyle = '#5c3317';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = Math.max(0.5, cellSize * 0.02);
 
             for (let i = 0; i < BOARD_SIZE; i++) {
                 ctx.beginPath();
-                ctx.moveTo(PADDING, PADDING + i * CELL_SIZE);
-                ctx.lineTo(PADDING + (BOARD_SIZE - 1) * CELL_SIZE, PADDING + i * CELL_SIZE);
+                ctx.moveTo(padding, padding + i * cellSize);
+                ctx.lineTo(padding + (BOARD_SIZE - 1) * cellSize, padding + i * cellSize);
                 ctx.stroke();
 
                 ctx.beginPath();
-                ctx.moveTo(PADDING + i * CELL_SIZE, PADDING);
-                ctx.lineTo(PADDING + i * CELL_SIZE, PADDING + (BOARD_SIZE - 1) * CELL_SIZE);
+                ctx.moveTo(padding + i * cellSize, padding);
+                ctx.lineTo(padding + i * cellSize, padding + (BOARD_SIZE - 1) * cellSize);
                 ctx.stroke();
             }
 
@@ -456,11 +692,12 @@
             ];
 
             ctx.fillStyle = '#5c3317';
+            const starRadius = Math.max(2, cellSize * 0.1);
             starPoints.forEach(([row, col]) => {
-                const x = PADDING + col * CELL_SIZE;
-                const y = PADDING + row * CELL_SIZE;
+                const x = padding + col * cellSize;
+                const y = padding + row * cellSize;
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.arc(x, y, starRadius, 0, Math.PI * 2);
                 ctx.fill();
             });
 
@@ -482,60 +719,53 @@
         }
 
         function drawStone(row, col, color, highlight = false) {
-            const x = PADDING + col * CELL_SIZE;
-            const y = PADDING + row * CELL_SIZE;
+            const x = padding + col * cellSize;
+            const y = padding + row * cellSize;
 
             ctx.beginPath();
-            ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+            ctx.arc(x, y, stoneRadius, 0, Math.PI * 2);
 
             if (color === 'black') {
                 const gradient = ctx.createRadialGradient(
-                    x - STONE_RADIUS * 0.3, y - STONE_RADIUS * 0.3, STONE_RADIUS * 0.1,
-                    x, y, STONE_RADIUS
+                    x - stoneRadius * 0.3, y - stoneRadius * 0.3, stoneRadius * 0.1,
+                    x, y, stoneRadius
                 );
                 gradient.addColorStop(0, '#666');
                 gradient.addColorStop(1, '#000');
                 ctx.fillStyle = gradient;
             } else {
                 const gradient = ctx.createRadialGradient(
-                    x - STONE_RADIUS * 0.3, y - STONE_RADIUS * 0.3, STONE_RADIUS * 0.1,
-                    x, y, STONE_RADIUS
+                    x - stoneRadius * 0.3, y - stoneRadius * 0.3, stoneRadius * 0.1,
+                    x, y, stoneRadius
                 );
                 gradient.addColorStop(0, '#fff');
                 gradient.addColorStop(1, '#ccc');
                 ctx.fillStyle = gradient;
             }
 
-            ctx.fill();
+            ctx.save();
             ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-            ctx.shadowBlur = 5;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-
-            ctx.beginPath();
-            ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+            ctx.shadowBlur = Math.max(2, stoneRadius * 0.2);
+            ctx.shadowOffsetX = Math.max(1, stoneRadius * 0.08);
+            ctx.shadowOffsetY = Math.max(1, stoneRadius * 0.08);
             ctx.fill();
-
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
+            ctx.restore();
 
             if (highlight) {
                 ctx.beginPath();
-                ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+                ctx.arc(x, y, stoneRadius, 0, Math.PI * 2);
                 ctx.strokeStyle = '#ff0000';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = Math.max(2, stoneRadius * 0.15);
                 ctx.stroke();
             }
         }
 
         function drawLastMoveIndicator(row, col) {
-            const x = PADDING + col * CELL_SIZE;
-            const y = PADDING + row * CELL_SIZE;
+            const x = padding + col * cellSize;
+            const y = padding + row * cellSize;
 
             ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.arc(x, y, Math.max(3, stoneRadius * 0.2), 0, Math.PI * 2);
             ctx.fillStyle = '#ff0000';
             ctx.fill();
         }
@@ -544,16 +774,16 @@
             ctx.save();
             ctx.beginPath();
             ctx.strokeStyle = '#ff0000';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = Math.max(2, stoneRadius * 0.15);
             ctx.globalAlpha = 0.8;
 
             const firstPoint = line[0];
             const lastPoint = line[line.length - 1];
 
-            const x1 = PADDING + firstPoint.col * CELL_SIZE;
-            const y1 = PADDING + firstPoint.row * CELL_SIZE;
-            const x2 = PADDING + lastPoint.col * CELL_SIZE;
-            const y2 = PADDING + lastPoint.row * CELL_SIZE;
+            const x1 = padding + firstPoint.col * cellSize;
+            const y1 = padding + firstPoint.row * cellSize;
+            const x2 = padding + lastPoint.col * cellSize;
+            const y2 = padding + lastPoint.row * cellSize;
 
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -570,6 +800,11 @@
             boardOverlay.addEventListener('mousemove', handleBoardMouseMove);
             boardOverlay.addEventListener('mouseleave', handleBoardMouseLeave);
 
+            boardOverlay.addEventListener('touchstart', handleTouchStart, { passive: false });
+            boardOverlay.addEventListener('touchmove', handleTouchMove, { passive: false });
+            boardOverlay.addEventListener('touchend', handleTouchEnd, { passive: false });
+            boardOverlay.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
             document.getElementById('restart-btn').addEventListener('click', restartGame);
             document.getElementById('rules-btn').addEventListener('click', showRules);
             document.getElementById('close-rules-btn').addEventListener('click', hideRules);
@@ -580,68 +815,158 @@
 
             document.getElementById('bgm-toggle').addEventListener('click', toggleBgm);
             document.getElementById('sfx-toggle').addEventListener('click', toggleSfx);
+
+            document.addEventListener('click', initAudioOnFirstInteraction, { once: true });
+            document.addEventListener('touchstart', initAudioOnFirstInteraction, { once: true, passive: true });
+        }
+
+        function initAudioOnFirstInteraction() {
+            if (!audioInitialized) {
+                initAudio();
+                audioInitialized = true;
+                if (bgmEnabled) {
+                    startBgm();
+                }
+            }
+        }
+
+        function getEventPosition(e) {
+            const rect = boardOverlay.getBoundingClientRect();
+            let clientX, clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function getGridPosition(pos) {
+            const col = Math.round((pos.x - padding) / cellSize);
+            const row = Math.round((pos.y - padding) / cellSize);
+
+            const actualX = padding + col * cellSize;
+            const actualY = padding + row * cellSize;
+            const distance = Math.sqrt(Math.pow(pos.x - actualX, 2) + Math.pow(pos.y - actualY, 2));
+
+            if (distance > cellSize * 0.6) {
+                return null;
+            }
+
+            if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+                return null;
+            }
+
+            return { row, col };
         }
 
         function handleBoardClick(e) {
             if (gameOver) return;
 
-            const rect = boardOverlay.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const pos = getEventPosition(e);
+            const gridPos = getGridPosition(pos);
 
-            const col = Math.round((x - PADDING) / CELL_SIZE);
-            const row = Math.round((y - PADDING) / CELL_SIZE);
+            if (!gridPos) return;
+            if (boardData[gridPos.row][gridPos.col] !== null) return;
 
-            if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
-                return;
-            }
-
-            if (boardData[row][col] !== null) {
-                return;
-            }
-
-            placeStone(row, col);
+            placeStone(gridPos.row, gridPos.col);
         }
 
         function handleBoardMouseMove(e) {
-            if (gameOver) return;
+            if (gameOver || isDragging) return;
 
-            const rect = boardOverlay.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const pos = getEventPosition(e);
+            const gridPos = getGridPosition(pos);
 
-            const col = Math.round((x - PADDING) / CELL_SIZE);
-            const row = Math.round((y - PADDING) / CELL_SIZE);
-
-            if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
-                overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            if (!gridPos || boardData[gridPos.row][gridPos.col] !== null) {
+                overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
                 return;
             }
 
-            if (boardData[row][col] !== null) {
-                overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-                return;
-            }
-
-            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-            drawPreviewStone(row, col);
+            overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+            drawPreviewStone(gridPos.row, gridPos.col);
         }
 
         function handleBoardMouseLeave() {
-            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            if (!isDragging) {
+                overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+            }
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (gameOver) return;
+            isDragging = true;
+
+            const pos = getEventPosition(e);
+            const gridPos = getGridPosition(pos);
+
+            if (gridPos && boardData[gridPos.row][gridPos.col] === null) {
+                overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+                drawPreviewStone(gridPos.row, gridPos.col);
+            }
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (gameOver || !isDragging) return;
+
+            const pos = getEventPosition(e);
+            const gridPos = getGridPosition(pos);
+
+            if (!gridPos || boardData[gridPos.row][gridPos.col] !== null) {
+                overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+                return;
+            }
+
+            overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+            drawPreviewStone(gridPos.row, gridPos.col);
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            if (gameOver) {
+                isDragging = false;
+                overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+                return;
+            }
+
+            const pos = getEventPosition(e);
+            const gridPos = getGridPosition(pos);
+
+            isDragging = false;
+            overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
+
+            if (!gridPos) return;
+            if (boardData[gridPos.row][gridPos.col] !== null) return;
+
+            placeStone(gridPos.row, gridPos.col);
         }
 
         function drawPreviewStone(row, col) {
-            const x = PADDING + col * CELL_SIZE;
-            const y = PADDING + row * CELL_SIZE;
+            const x = padding + col * cellSize;
+            const y = padding + row * cellSize;
 
             overlayCtx.beginPath();
-            overlayCtx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+            overlayCtx.arc(x, y, stoneRadius, 0, Math.PI * 2);
 
             if (currentPlayer === 'black') {
                 overlayCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             } else {
                 overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                overlayCtx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                overlayCtx.lineWidth = 1;
+                overlayCtx.stroke();
             }
 
             overlayCtx.fill();
@@ -653,7 +978,7 @@
 
             playMoveSound();
             drawBoard();
-            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
 
             if (checkWin(row, col)) {
                 gameOver = true;
@@ -789,7 +1114,7 @@
         function restartGame() {
             initBoardData();
             drawBoard();
-            overlayCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            overlayCtx.clearRect(0, 0, canvasSize, canvasSize);
             hideWinnerModal();
         }
 
@@ -847,7 +1172,11 @@
 
         function initAudio() {
             if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Web Audio API not supported');
+                }
             }
         }
 
@@ -856,8 +1185,18 @@
             const btn = document.getElementById('bgm-toggle');
             btn.textContent = bgmEnabled ? '🔊' : '🔇';
             
+            if (audioContext) {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }
+            
             if (bgmEnabled) {
-                startBgm();
+                if (!audioInitialized) {
+                    initAudioOnFirstInteraction();
+                } else {
+                    startBgm();
+                }
             } else {
                 stopBgm();
             }
@@ -874,43 +1213,51 @@
             
             stopBgm();
 
-            bgmGain = audioContext.createGain();
-            bgmGain.gain.value = 0.1;
-            bgmGain.connect(audioContext.destination);
+            try {
+                bgmGain = audioContext.createGain();
+                bgmGain.gain.value = 0.1;
+                bgmGain.connect(audioContext.destination);
 
-            playBgmLoop();
+                playBgmLoop();
+            } catch (e) {
+                console.log('BGM playback error:', e);
+            }
         }
 
         function playBgmLoop() {
             if (!bgmEnabled || !audioContext) return;
 
-            const notes = [523.25, 587.33, 659.25, 587.33, 523.25, 659.25, 587.33, 523.25];
-            const noteDuration = 0.4;
-            const startTime = audioContext.currentTime;
+            try {
+                const notes = [523.25, 587.33, 659.25, 587.33, 523.25, 659.25, 587.33, 523.25];
+                const noteDuration = 0.4;
+                const startTime = audioContext.currentTime;
 
-            notes.forEach((freq, i) => {
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
+                notes.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
 
-                osc.type = 'sine';
-                osc.frequency.value = freq;
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
 
-                gain.gain.setValueAtTime(0.05, startTime + i * noteDuration);
-                gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i + 1) * noteDuration - 0.05);
+                    gain.gain.setValueAtTime(0.05, startTime + i * noteDuration);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i + 1) * noteDuration - 0.05);
 
-                osc.connect(gain);
-                gain.connect(bgmGain);
+                    osc.connect(gain);
+                    gain.connect(bgmGain);
 
-                osc.start(startTime + i * noteDuration);
-                osc.stop(startTime + (i + 1) * noteDuration);
-            });
+                    osc.start(startTime + i * noteDuration);
+                    osc.stop(startTime + (i + 1) * noteDuration);
+                });
 
-            const totalDuration = notes.length * noteDuration * 1000;
-            bgmOscillator = setTimeout(() => {
-                if (bgmEnabled) {
-                    playBgmLoop();
-                }
-            }, totalDuration);
+                const totalDuration = notes.length * noteDuration * 1000;
+                bgmOscillator = setTimeout(() => {
+                    if (bgmEnabled) {
+                        playBgmLoop();
+                    }
+                }, totalDuration);
+            } catch (e) {
+                console.log('BGM loop error:', e);
+            }
         }
 
         function stopBgm() {
@@ -919,81 +1266,99 @@
                 bgmOscillator = null;
             }
             if (bgmGain) {
-                bgmGain.gain.value = 0;
+                try {
+                    bgmGain.gain.value = 0;
+                } catch (e) {}
             }
         }
 
         function playMoveSound() {
             if (!sfxEnabled || !audioContext) return;
 
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
+            try {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
 
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioContext.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
 
-            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
 
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
+                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
 
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.15);
+            } catch (e) {
+                console.log('Sound playback error:', e);
+            }
         }
 
         function playWinSound() {
             if (!sfxEnabled || !audioContext) return;
 
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            const startTime = audioContext.currentTime;
+            try {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
 
-            notes.forEach((freq, i) => {
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                const startTime = audioContext.currentTime;
 
-                osc.type = 'sine';
-                osc.frequency.value = freq;
+                notes.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
 
-                gain.gain.setValueAtTime(0.3, startTime + i * 0.15);
-                gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i + 1) * 0.15 + 0.1);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
 
-                osc.connect(gain);
-                gain.connect(audioContext.destination);
+                    gain.gain.setValueAtTime(0.3, startTime + i * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i + 1) * 0.15 + 0.1);
 
-                osc.start(startTime + i * 0.15);
-                osc.stop(startTime + (i + 1) * 0.15 + 0.1);
-            });
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.start(startTime + i * 0.15);
+                    osc.stop(startTime + (i + 1) * 0.15 + 0.1);
+                });
+            } catch (e) {
+                console.log('Win sound error:', e);
+            }
         }
 
         function playLoseSound() {
             if (!sfxEnabled || !audioContext) return;
 
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
+            try {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
 
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(200, audioContext.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
 
-            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
 
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
+                gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
 
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + 0.4);
-        }
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
 
-        document.addEventListener('click', function initAudioOnFirstClick() {
-            initAudio();
-            if (bgmEnabled) {
-                startBgm();
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.4);
+            } catch (e) {
+                console.log('Lose sound error:', e);
             }
-            document.removeEventListener('click', initAudioOnFirstClick);
-        }, { once: false });
+        }
 
         init();
     </script>
